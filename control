@@ -1,0 +1,9 @@
+Package: com.lnx.leadmehome
+Name: LeadMeHome
+Depends: mobilesubstrate, org.thebigboss.libcolorpicker
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Find yo icon bro !
+Maintainer: LonestarX
+Author: LonestarX
+Section: Tweaks
