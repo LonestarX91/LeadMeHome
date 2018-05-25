@@ -16,5 +16,9 @@ mentioned things, I will NEVER again open source another tweak of mine.
 ```
 
 Tweak link (temp till it gets on BigBoss): http://lonestarx.yourepo.com/pack/leadmehome
+
 PayPal if you want to support me: https://www.paypal.me/lonestarx1
+
 Email: me@lonestarx.net
+
+//Created by LonestarX © 2018
