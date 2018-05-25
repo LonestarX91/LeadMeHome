@@ -1,4 +1,4 @@
-//Created by LonestarX 2018
+//Created by LonestarX © 2018
 #import <UIKit/UIKit.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBFolderView.h>
