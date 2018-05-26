@@ -47,7 +47,6 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 -(id)iconListViewAtIndex:(unsigned long long)arg1 ;
 -(NSArray *)iconListViews;
 -(unsigned long long)iconListViewCount;
-
 @end
 
 @interface SPUISearchHeader
@@ -62,7 +61,6 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 
 @interface SBIsolationTankController : UIViewController
 @end
-
 
 @interface SBHomeScreenViewController : UIViewController
 @end
@@ -158,16 +156,13 @@ static SBFolderIcon* findIcon(SBFolderIcon *fIcon) {
     //searching all the icons in the current page
     for (int m = 0; m < folderContentIcons.count; m++) {
       if (![folderContentIcons[m] isKindOfClass:%c(SBFolderIcon)]) {
-        // NSLog(@"Found icon: %@, checking match", folderContentIcons[m]);
         SBIcon *appIcon = folderContentIcons[m];
         if ([[appIcon applicationBundleID] isEqualToString:searchedBundle]) {
           desiredIcon = appIcon;
           wantedFolder = fIcon;
           wantedFolderPageIndex = k;
-          // NSLog(@"FOUND ICON IN FOLDER: %@", fIcon);
           return wantedFolder;
         }
-        // NSLog(@"Not a match: %@", folderContentIcons[m]);
       }
     }
     //no icon found in the current folder, searching inside folders
@@ -203,7 +198,6 @@ static void wiggleMe(SBIconView *targetIconView) {
     }
 
     nukeAnimTimer = [NSTimer scheduledTimerWithTimeInterval:5 repeats:NO block:^(NSTimer * _Nonnull timer) {
-      // NSLog(@"Nuking magic");
       [iconImageLayer removeAllAnimations];
       iconImageLayer.shadowOpacity = 0;
       iconImageLayer.shadowColor = [UIColor clearColor].CGColor;
@@ -366,7 +360,6 @@ static void doTheMagic(id self) {
           wantedScreenIndex = i;
           goto done;
         }
-        // NSLog(@"homescreen icon not a match");
       }
     }
     //no icon match found in current page, searching folders
@@ -377,15 +370,11 @@ static void doTheMagic(id self) {
           wantedScreenIndex = i;
           goto done;
         }
-        else {
-          // NSLog(@"folder %@ in home page: %d doesn't contain it", icon, i);
-        }
       }
     }
   }
   done:;
-  // NSLog(@"Search done screen: %ld - folder: %@ - page - %ld", (long)wantedScreenIndex, wantedFolder, (long)wantedFolderPageIndex);
-  // //Magic done, going to the icon
+  //Magic done, going to the icon
   SBIsolationTankController *sbITC = (SBIsolationTankController *)[self window].rootViewController;
   if ((kCFCoreFoundationVersionNumber >= 1443.00)) {
     SBSpotlightNavigationController *sbSNC = [sbITC valueForKey:@"_isolatedViewController"];
@@ -416,14 +405,12 @@ static void doTheMagic(id self) {
     for (SBFolderIcon *obj in folderTreeArray) {
       [iconCT openFolderIcon:obj animated:NO withCompletion:^{
         if (obj == [folderTreeArray lastObject]) {
-          // NSLog(@"Reached last folder in tree, setting page");
           [[iconCT _currentFolderController] setCurrentPageIndex:wantedFolderPageIndex animated:NO];
           SBIconView *targetIconView = [[[iconCT _currentFolderController] viewMap] mappedIconViewForIcon:desiredIcon];
           wiggleMe(targetIconView);
         }
       }];
     }
-    // NSLog(@"Search done screen: %ld - folder: %@ - page - %ld - fcontroller: %@", (long)wantedScreenIndex, wantedFolder, (long)wantedFolderPageIndex, [iconCT _currentFolderController]);
   }
   else {
     SBIconView *targetIconView = [[[iconCT _currentFolderController] viewMap] mappedIconViewForIcon:desiredIcon];
@@ -450,7 +437,6 @@ static void doTheMagic(id self) {
 %new
 - (void)handleLongPress:(UILongPressGestureRecognizer *)sender {
   if (sender.state == UIGestureRecognizerStateBegan) {
-    // NSLog(@"searchuiiconview gesture called");
       doTheMagic(self);
   }
 }
@@ -469,7 +455,6 @@ static void doTheMagic(id self) {
 %new
 - (void)handleLongPress:(UILongPressGestureRecognizer *)sender {
   if (sender.state == UIGestureRecognizerStateBegan) {
-    // NSLog(@"SearchUISingleResultTableViewCell gesture called");
       doTheMagic(self);
   }
 }
@@ -519,7 +504,6 @@ static void reloadPrefs() {
 	glowEnabled = [prefs objectForKey:@"glowEnabled"] ? [(NSNumber *)[prefs objectForKey:@"glowEnabled"] boolValue] : true;
 	slamVibration = [prefs objectForKey:@"slamVibration"] ? [(NSNumber *)[prefs objectForKey:@"slamVibration"] boolValue] : true;
 	animType = [prefs objectForKey:@"animType"] ? [[prefs objectForKey:@"animType"] integerValue] : 0;
-
 }
 
 %ctor {
