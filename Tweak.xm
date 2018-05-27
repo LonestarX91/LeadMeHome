@@ -69,11 +69,6 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 @property (nonatomic,copy) NSString * identifier;
 @end
 
-@interface SearchUIIconView : UIView
-@property (retain) SFSearchResult * result;                                                 //@synthesize result=_result - In the implementation block
-- (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
-@end
-
 @interface SBIconView : UIView
 +(id)_jitterPositionAnimation;
 +(id)_jitterTransformAnimation;
@@ -117,11 +112,6 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 @end
 
 @interface SBSearchEtceteraIsolatedViewController : UIViewController
-@end
-
-@interface SearchUISingleResultTableViewCell : UITableViewCell
-- (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
-@property (retain) SFSearchResult *result;                                //@synthesize result=_result - In the implementation block
 @end
 
 @interface SBFolderController
@@ -176,7 +166,6 @@ static SBFolderIcon* findIcon(SBFolderIcon *fIcon) {
 }
 
 static void wiggleMe(SBIconView *targetIconView) {
-  NSLog(@"reached wiggle me");
   targetIV = targetIconView;
   NSString *iconImgvKey = @"_currentImageView";
   if ((kCFCoreFoundationVersionNumber >= 1443.00)) {
@@ -184,7 +173,6 @@ static void wiggleMe(SBIconView *targetIconView) {
   }
 
   UIView *curImgv = [targetIconView valueForKey:iconImgvKey];
-  NSLog(@"maybe crash?");
   __weak UIView *weakImgv = curImgv;
 
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -424,14 +412,25 @@ static void doTheMagic(id self) {
   desiredIcon = nil;
 }
 
+@interface SearchUIIconView : UIView
+@property (retain) SFSearchResult * result;                                                 //@synthesize result=_result - In the implementation block
+- (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
+@property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
+@end
+
 %hook SearchUIIconView
+%property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
+
 -(void)updateWithResult:(id)arg1 {
   %orig;
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-                                             initWithTarget:self
-                                             action:@selector(handleLongPress:)];
-  longPress.minimumPressDuration = 1.0;
-  [self addGestureRecognizer:longPress];
+  NSLog(@"search UIIconView");
+  if (!self.searchIconGesture) {
+    self.searchIconGesture = [[UILongPressGestureRecognizer alloc]
+                                                 initWithTarget:self
+                                                 action:@selector(handleLongPress:)];
+      self.searchIconGesture.minimumPressDuration = 1.0;
+      [self addGestureRecognizer:self.searchIconGesture];
+  }
 }
 
 %new
@@ -442,15 +441,15 @@ static void doTheMagic(id self) {
 }
 %end
 
+@interface SearchUISingleResultTableViewCell : UITableViewCell
+- (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
+@property (retain) SFSearchResult *result;                                //@synthesize result=_result - In the implementation block
+@property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
+@end
+
+
 %hook SearchUISingleResultTableViewCell
--(void)updateWithResult:(id)arg1 {
-  %orig;
-  UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-                                               initWithTarget:self
-                                               action:@selector(handleLongPress:)];
-    longPress.minimumPressDuration = 1.0;
-    [self addGestureRecognizer:longPress];
-}
+%property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
 
 %new
 - (void)handleLongPress:(UILongPressGestureRecognizer *)sender {
@@ -458,6 +457,19 @@ static void doTheMagic(id self) {
       doTheMagic(self);
   }
 }
+
+-(void)setResult:(SFSearchResult *)arg1 {
+  %orig;
+  NSLog(@"search single");
+  if (!self.searchIconGesture) {
+    self.searchIconGesture = [[UILongPressGestureRecognizer alloc]
+                                                 initWithTarget:self
+                                                 action:@selector(handleLongPress:)];
+      self.searchIconGesture.minimumPressDuration = 1.0;
+      [self addGestureRecognizer:self.searchIconGesture];
+  }
+}
+
 %end
 
 %hook SBFolderController
