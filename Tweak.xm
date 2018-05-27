@@ -80,6 +80,7 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 @interface SBIconViewMap : NSObject
 -(id)mappedIconViewForIcon:(id)arg1 ;
 -(id)_iconViewForIcon:(id)arg1 ;
+-(id)allIcons;
 @end
 
 @interface SBIconController : UIViewController
@@ -87,12 +88,14 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 -(void)openFolderIcon:(id)arg1 animated:(BOOL)arg2 withCompletion:(/*^block*/id)arg3;
 -(id)_rootFolderController;
 -(id)_currentFolderController;
+-(id)dockListView;
 @end
 
 @interface SBRootFolderController
 @property (nonatomic,readonly) SBRootFolderView * contentView;
 -(BOOL)setCurrentPageIndex:(long long)arg1 animated:(BOOL)arg2 completion:(/*^block*/id)arg3 ;
 -(BOOL)setCurrentPageIndex:(long long)arg1 animated:(BOOL)arg2;
+@property (nonatomic,readonly) long long currentPageIndex;
 @end
 
 @interface SBIconIndexMutableList : NSObject
@@ -102,6 +105,7 @@ FOUNDATION_EXTERN void AudioServicesPlaySystemSoundWithVibration(unsigned long, 
 @end
 
 @interface SBIconListModel : NSObject
+-(NSArray *)children;
 @end
 
 @interface SBApplicationIcon : SBIcon
@@ -321,6 +325,10 @@ static void wiggleMe(SBIconView *targetIconView) {
   });
 }
 
+@interface SBDockIconListView : SBRootIconListView
+-(SBIconListModel *)model;
+@end
+
 static void doTheMagic(id self) {
   if ([nukeAnimTimer isValid]) {
     [nukeAnimTimer invalidate];
@@ -331,6 +339,18 @@ static void doTheMagic(id self) {
   SBRootFolderController *rootFolderCT = [iconCT valueForKey:@"_rootFolderController"];
   SBRootFolderView *rootFV = rootFolderCT.contentView;
   NSArray *iconLVs = [rootFV iconListViews];
+
+  //first searching the dock, for optimisation reasons aka starting from the fastest search up
+  SBDockIconListView *dockLV = [iconCT dockListView];
+  for (SBIcon *dockIcon in [[dockLV model] children]) {
+    if ([[dockIcon applicationBundleID] isEqualToString:[[self result] identifier]]) {
+      desiredIcon = dockIcon;
+      wantedScreenIndex = rootFolderCT.currentPageIndex;
+      goto done;
+    }
+  }
+  //nothing found in the dock, proceeding further
+  
   //searching all the pages on homescreen
   for (int i = 0; i < iconLVs.count; i++) {
     SBRootIconListView *lv = iconLVs[i];
@@ -423,7 +443,6 @@ static void doTheMagic(id self) {
 
 -(void)updateWithResult:(id)arg1 {
   %orig;
-  NSLog(@"search UIIconView");
   if (!self.searchIconGesture) {
     self.searchIconGesture = [[UILongPressGestureRecognizer alloc]
                                                  initWithTarget:self
@@ -460,7 +479,6 @@ static void doTheMagic(id self) {
 
 -(void)setResult:(SFSearchResult *)arg1 {
   %orig;
-  NSLog(@"search single");
   if (!self.searchIconGesture) {
     self.searchIconGesture = [[UILongPressGestureRecognizer alloc]
                                                  initWithTarget:self
