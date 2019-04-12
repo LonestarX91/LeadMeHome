@@ -1,5 +1,4 @@
 include $(THEOS)/makefiles/common.mk
-TWEAKNAMEPREFS_LIBRARIES = colorpicker
 
 BUNDLE_NAME = LeadMeHome
 LeadMeHome_FILES = $(wildcard *.m) $(wildcard *.x)
@@ -7,6 +6,7 @@ LeadMeHome_INSTALL_PATH = /Library/PreferenceBundles
 LeadMeHome_FRAMEWORKS = UIKit
 LeadMeHome_PRIVATE_FRAMEWORKS = Preferences
 LeadMeHome_CFLAGS = -fobjc-arc
+LeadMeHome_LIBRARIES = colorpicker
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

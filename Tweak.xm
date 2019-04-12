@@ -350,7 +350,7 @@ static void doTheMagic(id self) {
     }
   }
   //nothing found in the dock, proceeding further
-  
+
   //searching all the pages on homescreen
   for (int i = 0; i < iconLVs.count; i++) {
     SBRootIconListView *lv = iconLVs[i];
@@ -432,6 +432,35 @@ static void doTheMagic(id self) {
   desiredIcon = nil;
 }
 
+%group iOS12
+  @interface SearchUIAppIconButton : UIButton
+  @property (retain) SFSearchResult * result;
+  - (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
+  -(void)updateWithResult:(id)arg1 ;
+  @property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
+  @end
+
+  %hook SearchUIAppIconButton
+  %property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
+
+  -(void)updateWithResult:(id)arg1 {
+    %orig;
+    if (!self.searchIconGesture) {
+      self.searchIconGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                            action:@selector(handleLongPress:)];
+      self.searchIconGesture.minimumPressDuration = 1.0;
+      [self addGestureRecognizer:self.searchIconGesture];
+    }
+  }
+  %new - (void)handleLongPress:(UILongPressGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        doTheMagic(self);
+    }
+  }
+  %end
+%end
+
+%group iOS11
 @interface SearchUIIconView : UIView
 @property (retain) SFSearchResult * result;                                                 //@synthesize result=_result - In the implementation block
 - (void)handleLongPress:(UILongPressGestureRecognizer *)sender;
@@ -466,10 +495,8 @@ static void doTheMagic(id self) {
 @property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
 @end
 
-
 %hook SearchUISingleResultTableViewCell
 %property (nonatomic, retain) UILongPressGestureRecognizer *searchIconGesture;
-
 %new
 - (void)handleLongPress:(UILongPressGestureRecognizer *)sender {
   if (sender.state == UIGestureRecognizerStateBegan) {
@@ -483,11 +510,12 @@ static void doTheMagic(id self) {
     self.searchIconGesture = [[UILongPressGestureRecognizer alloc]
                                                  initWithTarget:self
                                                  action:@selector(handleLongPress:)];
-      self.searchIconGesture.minimumPressDuration = 1.0;
-      [self addGestureRecognizer:self.searchIconGesture];
+    self.searchIconGesture.minimumPressDuration = 1.0;
+    [self addGestureRecognizer:self.searchIconGesture];
   }
 }
 
+%end
 %end
 
 %hook SBFolderController
@@ -537,6 +565,15 @@ static void reloadPrefs() {
 }
 
 %ctor {
+  NSLog(@"LMHLOG hodor");
+  %init;
+  if (kCFCoreFoundationVersionNumber >= 1535.12) {
+    NSLog(@"LMHLOG init 12");
+    %init(iOS12);
+  }
+  else {
+    %init(iOS11);
+  }
 	reloadPrefs();
 	reloadColorPrefs();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)reloadPrefs, kSettingsChangedNotification, NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
